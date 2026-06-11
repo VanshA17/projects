@@ -5,7 +5,7 @@ def simulate_ab_test(
     n_control: int = 5000,
     n_treatment: int = 5000,
     control_conversion: float = 0.042,
-    treatment_conversion: float = 0.048,
+    treatment_conversion: float = 0.060,  # change from 0.048 to 0.060
     metric_type: str = "binary",  # "binary" or "continuous"
     seed: int = 42
 ):
