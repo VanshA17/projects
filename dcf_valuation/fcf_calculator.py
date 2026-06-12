@@ -19,8 +19,9 @@ def calculate_historical_fcf(cash_flow: pd.DataFrame) -> pd.DataFrame:
     # Sort oldest to newest
     df = df.sort_values("fiscalDateEnding").reset_index(drop=True)
 
+    df["fcf_readable"] = df["freeCashFlow"].apply(lambda x: f"${x/1e9:.2f}B")
     print("\n✅ Historical Free Cash Flow:")
-    print(df)
+    print(df[["fiscalDateEnding", "fcf_readable"]])
 
     return df
 
@@ -72,8 +73,11 @@ def project_fcf(fcf_df: pd.DataFrame, growth_rate: float = None, years: int = 5)
         })
 
     proj_df = pd.DataFrame(projections)
+    proj_df["projectedFCF_readable"] = proj_df["projectedFCF"].apply(
+        lambda x: f"${x/1e9:.2f}B"
+    )
     print(f"\n✅ Projected FCF for next {years} years:")
-    print(proj_df)
+    print(proj_df[["year", "projectedFCF_readable"]])
 
     return proj_df
 

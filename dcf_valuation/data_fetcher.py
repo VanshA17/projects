@@ -20,9 +20,11 @@ def get_financials(ticker: str):
     r = requests.get(BASE_URL, params=params)
     data = r.json()
     balance_sheet = pd.DataFrame(data.get("annualReports", []))
-    # delete the debug line if it's still there
     print("\n✅ Balance Sheet:")
-    print(balance_sheet[["fiscalDateEnding", "totalAssets", "totalLiabilities", "totalShareholderEquity", "cashAndCashEquivalentsAtCarryingValue"]].head(4))
+    if balance_sheet.empty:
+        print("⚠️ Balance sheet empty — likely API rate limit hit. Try again tomorrow.")
+    else:
+        print(balance_sheet[["fiscalDateEnding", "totalAssets", "totalLiabilities", "totalShareholderEquity", "cashAndCashEquivalentsAtCarryingValue"]].head(4))
     
     # --- Cash Flow Statement ---
     params = {"function": "CASH_FLOW", "symbol": ticker, "apikey": API_KEY}
@@ -30,9 +32,12 @@ def get_financials(ticker: str):
     data = r.json()
     cash_flow = pd.DataFrame(data.get("annualReports", []))
     # Calculate Free Cash Flow = Operating Cash Flow - Capital Expenditures
-    cash_flow["freeCashFlow"] = cash_flow["operatingCashflow"].astype(float) - cash_flow["capitalExpenditures"].astype(float).abs()
     print("\n✅ Cash Flow Statement:")
-    print(cash_flow[["fiscalDateEnding", "operatingCashflow", "capitalExpenditures", "freeCashFlow"]].head(4))
+    if cash_flow.empty:
+        print("⚠️ Cash flow empty — likely API rate limit hit. Try again tomorrow.")
+    else:
+        cash_flow["freeCashFlow"] = cash_flow["operatingCashflow"].astype(float) - cash_flow["capitalExpenditures"].astype(float).abs()
+        print(cash_flow[["fiscalDateEnding", "operatingCashflow", "capitalExpenditures", "freeCashFlow"]].head(4))
 
     return income_stmt, balance_sheet, cash_flow
 

@@ -65,7 +65,50 @@ class ABTester:
         print(f"  Significant:    {'✅ Yes' if significant else '❌ No'} (alpha={self.alpha})")
 
         return {"test": "z-test", "z_stat": z_stat, "p_value": p_value, "significant": significant}
+    def cohen_d(self) -> float:
+        """
+        Effect size — how meaningful is the difference, not just significant?
+        Small: 0.2 | Medium: 0.5 | Large: 0.8
+        """
+        pooled_std = np.sqrt(
+            (np.std(self.control, ddof=1)**2 + np.std(self.treatment, ddof=1)**2) / 2
+        )
+        d = (self.treatment.mean() - self.control.mean()) / pooled_std
 
+        if abs(d) < 0.2:
+            size = "Negligible"
+        elif abs(d) < 0.5:
+            size = "Small"
+        elif abs(d) < 0.8:
+            size = "Medium"
+        else:
+            size = "Large"
+
+        print(f"\n✅ Effect Size (Cohen's d):")
+        print(f"   Cohen's d:  {d:.4f} ({size})")
+        return d
+
+    def confidence_interval(self) -> tuple:
+        """
+        95% Confidence Interval for the difference in means.
+        Tells you the range where the true difference likely lies.
+        """
+        diff = self.treatment.mean() - self.control.mean()
+        se = np.sqrt(
+            np.var(self.control, ddof=1)/len(self.control) +
+            np.var(self.treatment, ddof=1)/len(self.treatment)
+        )
+        margin = 1.96 * se  # 1.96 = z-score for 95% confidence
+
+        lower = diff - margin
+        upper = diff + margin
+
+        print(f"\n✅ 95% Confidence Interval for difference in means:")
+        print(f"   Difference:  {diff:.4f}")
+        print(f"   CI:          [{lower:.4f}, {upper:.4f}]")
+        print(f"   Interpretation: The true difference is between {lower:.4f} and {upper:.4f} with 95% confidence")
+
+        return lower, upper
 
 if __name__ == "__main__":
     from simulator import simulate_ab_test
@@ -76,6 +119,8 @@ if __name__ == "__main__":
     _, control, treatment = simulate_ab_test(metric_type="continuous")
     tester = ABTester(control, treatment)
     tester.t_test()
+    tester.cohen_d()
+    tester.confidence_interval()
 
     print("\n" + "=" * 40)
     print("TEST 2 — Binary Metric (Z-Test)")
@@ -83,6 +128,8 @@ if __name__ == "__main__":
     _, control, treatment = simulate_ab_test(metric_type="binary")
     tester2 = ABTester(control, treatment)
     tester2.proportion_z_test()
+    tester2.cohen_d()
+    tester2.confidence_interval()
 
     print("\n" + "=" * 40)
     print("TEST 3 — Chi-Square Test")
