@@ -1,5 +1,7 @@
 import requests
 import pandas as pd
+from cache import get_cached, set_cached
+from data_fetcher import fetch_with_cache
 
 API_KEY = "J6QTNFXSAXIY32M2"  # same key as data_fetcher.py
 BASE_URL = "https://www.alphavantage.co/query"
@@ -7,8 +9,7 @@ BASE_URL = "https://www.alphavantage.co/query"
 def get_beta(ticker: str) -> float:
     """Fetches beta of the stock from Alpha Vantage."""
     params = {"function": "OVERVIEW", "symbol": ticker, "apikey": API_KEY}
-    r = requests.get(BASE_URL, params=params)
-    data = r.json()
+    data = fetch_with_cache(params, f"{ticker}_{params['function']}")
     beta = float(data.get("Beta", 1.0))  # default to 1.0 if not found
     print(f"✅ Beta: {beta}")
     return beta
@@ -65,8 +66,7 @@ def calculate_wacc(ticker: str, tax_rate: float = 0.21) -> float:
     """
     # Get market cap from overview
     params = {"function": "OVERVIEW", "symbol": ticker, "apikey": API_KEY}
-    r = requests.get(BASE_URL, params=params)
-    data = r.json()
+    data = fetch_with_cache(params, f"{ticker}_{params['function']}")
 
     market_cap = float(data.get("MarketCapitalization", 0) or 0)
     beta = float(data.get("Beta", 1.0) or 1.0)
@@ -81,9 +81,17 @@ def calculate_wacc(ticker: str, tax_rate: float = 0.21) -> float:
     balance_data = r.json().get("annualReports", [{}])[0]
     total_debt = float(balance_data.get("shortLongTermDebtTotal", 0) or 0)
 
+    # Fallback if market cap unavailable
+    if market_cap == 0:
+        print("⚠️ Market cap unavailable from API. Using fallback.")
+        try:
+            market_cap = float(input("   Enter market cap in billions (e.g. 3200): ")) * 1e9
+        except:
+            market_cap = 3200e9  # AAPL approximate
+
     total_value = market_cap + total_debt
-    weight_equity = market_cap / total_value
-    weight_debt = total_debt / total_value
+    weight_equity = market_cap / total_value if total_value > 0 else 0.95
+    weight_debt = total_debt / total_value if total_value > 0 else 0.05
 
     # WACC formula
     wacc = (weight_equity * cost_of_equity) + \
