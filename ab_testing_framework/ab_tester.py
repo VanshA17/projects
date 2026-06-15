@@ -55,7 +55,7 @@ class ABTester:
         nobs = np.array([len(self.treatment), len(self.control)])
 
         z_stat, p_value = proportions_ztest(count, nobs)
-        significant = p_value < self.alpha
+        significant = bool(p_value < self.alpha)
 
         print("\n✅ Proportion Z-Test Results:")
         print(f"  Control rate:   {self.control.mean():.4f}")
