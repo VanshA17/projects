@@ -20,6 +20,17 @@ Given a stock ticker, it:
 
 ## 🖥️ Demo
 
+### Valuation Summary
+![Valuation Summary](screenshots/valuation_summary.png)
+
+### FCF History & Projection
+![FCF Chart](screenshots/fcf_chart.png)
+
+### Sensitivity Heatmap
+![Sensitivity Heatmap](screenshots/sensitivity_heatmap.png)
+
+### Scenario Analysis
+![Scenario Analysis](screenshots/scenario_analysis.png)
 ---
 
 ## 🏗️ Project Structure

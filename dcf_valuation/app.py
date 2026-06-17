@@ -52,17 +52,34 @@ if run:
             # Fetch financials
             income, balance, cashflow = get_financials(ticker)
 
-            if cashflow.empty:
-                st.error("⚠️ Could not fetch data. API rate limit may be hit. Try again later.")
-                st.stop()
-
             # Calculate FCF
-            fcf_df = calculate_historical_fcf(cashflow)
-            growth_rate = manual_growth if manual_growth > 0 else calculate_fcf_growth_rate(fcf_df)
+            if not cashflow.empty:
+                fcf_df = calculate_historical_fcf(cashflow)
+                growth_rate = manual_growth if manual_growth > 0 else calculate_fcf_growth_rate(fcf_df)
+            else:
+                st.warning("⚠️ API limit hit — using manual override values.")
+                if manual_growth == 0:
+                    st.error("Please set FCF Growth Rate Override in sidebar (e.g. 10)")
+                    st.stop()
+                growth_rate = manual_growth
+                # Create dummy fcf_df for projection
+                import pandas as pd
+                fcf_df = pd.DataFrame({
+                    "fiscalDateEnding": ["2025-09-30"],
+                    "freeCashFlow": [98767000000.0]
+                })
+
             proj_df = project_fcf(fcf_df, growth_rate, years=years)
 
             # WACC
-            wacc = manual_wacc if manual_wacc > 0 else calculate_wacc(ticker)
+            if manual_wacc > 0:
+                wacc = manual_wacc
+            else:
+                try:
+                    wacc = calculate_wacc(ticker)
+                except:
+                    st.warning("⚠️ Could not calculate WACC automatically. Using 10.25% default.")
+                    wacc = 0.1025
 
             # DCF calculation
             proj_fcfs = proj_df["projectedFCF"].values

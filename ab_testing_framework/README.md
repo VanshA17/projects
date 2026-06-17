@@ -20,6 +20,17 @@ Given experiment data, it:
 
 ## 🖥️ Demo
 
+### Experiment Summary
+![Summary](screenshots/ab_summary.png)
+
+### Distribution Comparison
+![Distribution](screenshots/ab_distribution.png)
+
+### Power Analysis
+![Power](screenshots/ab_power.png)
+
+### Diagnostics
+![Diagnostics](screenshots/ab_diagnostics.png)
 ---
 
 ## 🏗️ Project Structure
