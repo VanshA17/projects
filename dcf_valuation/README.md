@@ -1,6 +1,6 @@
 # 📈 DCF Stock Valuation Tool
 
-> Automated Discounted Cash Flow analysis for any US-listed stock — built by Vansh Ajmmera, Economics @ IIT Kanpur
+> Automated Discounted Cash Flow analysis for any US-listed stock — built by Vansh Ajmera, Economics @ IIT Kanpur
 
 ---
 
